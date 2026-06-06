@@ -244,6 +244,23 @@ npm run type-check   # TypeScript 类型检查
 - 模型缓存目录为项目根下 `.cache/`，已在 `.gitignore` 中忽略。预热模型可在首次部署后请求一次 `GET /api/remove-bg`。
 - 处理大图较耗时，API 路由 `maxDuration` 设为 120s。
 
+### GitHub Actions Self-hosted Runner 自动部署
+
+推送 `main` 后可在自托管 Runner 上自动零停机部署，详见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
+
+两套方案并存（均保留 2 个历史 release）：
+
+| 方案 | 入口 |
+| --- | --- |
+| Deployer（推荐） | `.github/workflows/deploy-self-hosted.yml` |
+| Shell 脚本（回退） | `scripts/deploy-zero-downtime.sh` |
+
+首次部署：
+
+```bash
+DEPLOY_PATH=/example/simple-rmbg scripts/first-deploy.sh
+```
+
 ## 许可
 
 RMBG-2.0 模型由 BRIA AI 提供，使用前请在 Hugging Face 接受其许可条款；商业使用请参考其官方许可。

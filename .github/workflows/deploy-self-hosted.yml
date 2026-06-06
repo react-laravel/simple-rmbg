@@ -1,0 +1,41 @@
+# 推送 main 后在国内自托管 Runner 上通过 Deployer 执行零停机部署。
+# 前提：目标服务器配好 Node.js / npm / PM2 / Nginx，且 shared/models 已上传 RMBG-2.0 权重。
+# 详情见 docs/DEPLOYMENT.md。
+name: Deploy (Self-hosted)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Ensure Deployer phar present
+        run: |
+          set -euo pipefail
+          DEP_BIN="$HOME/.deployer/dep.phar"
+          DEP_VERSION="7.5.7"
+          if [ ! -f "$DEP_BIN" ]; then
+            mkdir -p "$(dirname "$DEP_BIN")"
+            curl -fsSL "https://deployer.org/releases/v${DEP_VERSION}/deployer.phar" -o "$DEP_BIN"
+            chmod +x "$DEP_BIN"
+          fi
+          php "$DEP_BIN" --version
+
+      - name: Deploy production
+        run: |
+          php "$HOME/.deployer/dep.phar" deploy production -v
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          PM2_APP: ${{ secrets.PM2_APP }}
+          # GitHub Actions marks child processes with RUNNER_TRACKING_ID and
+          # kills them when the job exits. PM2/Next.js must survive the deploy.
+          RUNNER_TRACKING_ID: ""
