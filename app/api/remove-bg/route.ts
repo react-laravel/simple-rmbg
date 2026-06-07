@@ -7,7 +7,7 @@ import {
 } from '@/lib/bg-removal'
 
 export const runtime = 'nodejs'
-export const maxDuration = 120
+export const maxDuration = 600
 
 const MAX_BYTES = 15 * 1024 * 1024 // 15MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp']
