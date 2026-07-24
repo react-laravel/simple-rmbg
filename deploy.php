@@ -175,7 +175,27 @@ task('deploy:vendors', function () {
 
 desc('构建 Next.js 生产产物');
 task('deploy:build', function () {
-    run('cd {{release_path}} && npm run build');
+    run(<<<'BASH'
+bash -lc '
+set -euo pipefail
+
+shared_cache="{{deploy_path}}/shared/.cache"
+release_cache="{{release_path}}/.cache"
+
+restore_shared_cache() {
+  rm -rf "$release_cache"
+  ln -sfn "$shared_cache" "$release_cache"
+}
+trap restore_shared_cache EXIT
+
+rm -rf "$release_cache"
+mkdir -p "$release_cache"
+rsync -a "$shared_cache/" "$release_cache/"
+
+cd "{{release_path}}"
+npm run build
+'
+BASH);
 });
 
 desc('保留跨发布的 Next 静态资源');
