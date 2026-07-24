@@ -180,17 +180,21 @@ bash -lc '
 set -euo pipefail
 
 shared_cache="{{deploy_path}}/shared/.cache"
+shared_models="{{deploy_path}}/shared/models"
 release_cache="{{release_path}}/.cache"
+release_models="{{release_path}}/models"
 
-restore_shared_cache() {
-  rm -rf "$release_cache"
+restore_shared_runtime() {
+  rm -rf "$release_cache" "$release_models"
   ln -sfn "$shared_cache" "$release_cache"
+  ln -sfn "$shared_models" "$release_models"
 }
-trap restore_shared_cache EXIT
+trap restore_shared_runtime EXIT
 
-rm -rf "$release_cache"
-mkdir -p "$release_cache"
-rsync -a "$shared_cache/" "$release_cache/"
+rm -rf "$release_cache" "$release_models"
+mkdir -p "$release_cache" "$release_models"
+cp -al "$shared_cache/." "$release_cache/"
+cp -al "$shared_models/." "$release_models/"
 
 cd "{{release_path}}"
 npm run build
