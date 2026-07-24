@@ -170,7 +170,7 @@ BASH);
 
 desc('安装 Node.js 依赖');
 task('deploy:vendors', function () {
-    run('cd {{release_path}} && npm ci');
+    run('cd {{release_path}} && GLOBAL_AGENT_HTTPS_PROXY="${HTTPS_PROXY:-${https_proxy:-}}" npm ci');
 });
 
 desc('构建 Next.js 生产产物');
