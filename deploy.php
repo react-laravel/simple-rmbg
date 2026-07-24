@@ -24,7 +24,7 @@ require 'recipe/common.php';
 // 基本配置
 // =====================
 set('application', 'simple-rmbg');
-set('keep_releases', 2);
+set('keep_releases', 1);
 set('git_tty', false);
 set('workspace_root', __DIR__);
 set('writable_mode', 'chmod');

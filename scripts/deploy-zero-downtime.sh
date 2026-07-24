@@ -307,7 +307,7 @@ if [ -L "$CURRENT_LINK" ] || [ -d "$CURRENT_LINK" ]; then
   ln -sfn "$NEW_RELEASE" "$CURRENT_LINK"
   log "已切换 current -> $NEW_RELEASE"
 
-  KEEP=2
+  KEEP=1
   (cd "$RELEASES_DIR" && ls -1t | grep -E '^[0-9]{14}$' | tail -n +$((KEEP + 1)) | while read -r d; do [ -n "$d" ] && rm -rf "$RELEASES_DIR/$d"; done)
   rm -rf "${RELEASES_DIR}"/.staging.* 2>/dev/null || true
 

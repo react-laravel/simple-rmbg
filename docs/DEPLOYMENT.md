@@ -11,7 +11,7 @@
 | **Deployer（推荐）** | `.github/workflows/deploy-self-hosted.yml` | 推送 main 自动部署，内置 rollback / unlock |
 | **Shell 脚本（回退）** | `scripts/deploy-zero-downtime.sh` | 迁移过渡期保留，逻辑与 Deployer 类似 |
 
-两种方案均保留 **2 个历史 release**（`keep_releases = 2`），便于快速回滚且节省磁盘。
+两种方案均只保留 **1 个 release**（`keep_releases = 1`），以尽量节省磁盘。
 
 ---
 
