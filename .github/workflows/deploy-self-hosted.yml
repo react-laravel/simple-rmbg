@@ -1,5 +1,5 @@
 # 推送 main 后在国内自托管 Runner 上通过 Deployer 执行零停机部署。
-# 前提：目标服务器配好 Node.js / npm / PM2 / Nginx，且 shared/models 已上传 RMBG-1.4 权重。
+# 前提：目标服务器配好 Node.js / npm / PM2 / Nginx，且 shared/models 已上传 RMBG-2.0 权重。
 # 详情见 docs/DEPLOYMENT.md。
 name: Deploy (Self-hosted)
 

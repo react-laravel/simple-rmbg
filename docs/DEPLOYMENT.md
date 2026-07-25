@@ -27,7 +27,7 @@
 │   ├── 20260419183000/
 │   └── 20260420090000/
 ├── shared/
-│   ├── models/           RMBG-1.4 权重（~170MB，跨 release 共享）
+│   ├── models/           RMBG-2.0 权重（~350MB，跨 release 共享）
 │   ├── .cache/           transformers.js 缓存
 │   └── .next-static/     Next 静态资源
 ├── logs/                 PM2 日志（shared 软链）
@@ -37,7 +37,7 @@
 
 - Nginx / 反向代理指向 `current`
 - PM2 的 `cwd` 指向 `current`
-- 模型权重放在 `shared/models/RMBG-1.4/`，**不会**随 git 部署
+- 模型权重放在 `shared/models/RMBG-2.0/`，**不会**随 git 部署
 
 ---
 
@@ -53,12 +53,12 @@
 
 ### 3.2 模型权重
 
-首次部署前，把 RMBG-1.4 模型上传到 `shared/models/`：
+首次部署前，把 RMBG-2.0 模型上传到 `shared/models/`：
 
 ```bash
 mkdir -p /example/simple-rmbg/shared/models
-tar -xzf rmbg-1.4.tar.gz -C /example/simple-rmbg/shared/models
-# 确认存在：shared/models/RMBG-1.4/onnx/model.onnx
+tar -xzf rmbg-2.0.tar.gz -C /example/simple-rmbg/shared/models
+# 确认存在：shared/models/RMBG-2.0/onnx/model_q4.onnx
 ```
 
 在 `.env.local` 中设置：
@@ -135,7 +135,7 @@ DEPLOY_PATH=/example/simple-rmbg scripts/deploy-zero-downtime.sh
 | 现象                   | 排查                                                                       |
 | ---------------------- | -------------------------------------------------------------------------- |
 | `Deploy is locked`     | 执行 `scripts/ensure-deployer.sh deploy:unlock production`                 |
-| API 返回 503           | 检查 `shared/models/RMBG-1.4/onnx/model.onnx` 是否存在，`.env` 是否配置   |
+| API 返回 503           | 检查 `shared/models/RMBG-2.0/onnx/model_q4.onnx` 是否存在，`.env` 是否配置   |
 | `npm ci` 失败          | 检查 Node / npm 版本                                                       |
 | `next build` 失败      | 在 release 目录手动执行 `npm run build` 复现                               |
 | `pm2 reload` 失败      | `pm2 logs simple-rmbg-nextjs`、`pm2 status`                                |

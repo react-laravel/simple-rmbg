@@ -1,17 +1,17 @@
-# 去背景 (Next.js + RMBG-1.4)
+# 去背景 (Next.js + RMBG-2.0)
 
-一个去图片背景的 Web 应用。所有推理在服务端本地完成，使用 [`briaai/RMBG-1.4`](https://huggingface.co/briaai/RMBG-1.4)（通过 [transformers.js](https://github.com/huggingface/transformers.js) 运行），可离线、隐私友好。同时提供 REST API，网页和外部调用共用同一处理逻辑。
+一个去图片背景的 Web 应用。所有推理在服务端本地完成，使用 [`briaai/RMBG-2.0`](https://huggingface.co/briaai/RMBG-2.0)（通过 [transformers.js](https://github.com/huggingface/transformers.js) 运行），可离线、隐私友好。同时提供 REST API，网页和外部调用共用同一处理逻辑。
 
 ## 技术栈
 
 - **Next.js 15** (App Router) + React 19 + TypeScript
 - **Tailwind CSS v4**
-- **@huggingface/transformers** (transformers.js) 加载 RMBG-1.4
+- **@huggingface/transformers** (transformers.js) 加载 RMBG-2.0
 - **sharp** 把模型输出的 mask 作为 alpha 通道合成透明 PNG
 
 ## 处理流程
 
-1. 使用 RMBG-1.4 生成前景/背景 mask
+1. 使用 RMBG-2.0 生成前景/背景 mask
 2. 将 mask 写入原图 alpha 通道，输出透明或纯色背景 PNG
 
 ## 快速开始
@@ -25,24 +25,31 @@ npm run dev
 
 ### 本地使用前必做（二选一）
 
-RMBG-1.4 可匿名下载。直接启动时，首次推理会把权重缓存到 `.cache/`，之后可离线。网络受限或生产服务器建议使用下面的本地模型目录方式。
+RMBG-2.0 是 **Hugging Face 受条款保护模型**，不能直接匿名下载。未配置时 `GET /api/remove-bg` 会返回 503，错误类似 `Unauthorized access to .../onnx/model_q4.onnx`。
 
-**方式 A：在线拉取（适合本机开发）**
+**方式 A：HF Token 在线拉取（适合本机开发）**
+
+1. 登录 [briaai/RMBG-2.0](https://huggingface.co/briaai/RMBG-2.0)，点击同意模型条款
+2. 在 [Access Tokens](https://huggingface.co/settings/tokens) 创建 token（Read 权限即可）
+3. 启动时带上 token：
 
 ```bash
-npm run dev
+HF_TOKEN="hf_你的token" npm run dev
 ```
+
+首次推理会把权重缓存到 `.cache/`，之后可离线。
 
 **方式 B：本地模型目录（适合服务器 / 离线，推荐）**
 
-在可访问 Hugging Face 的环境执行：
+在本机（已同意条款且能下载的环境）执行：
 
 ```bash
 # 需安装 huggingface_hub：pip install huggingface_hub
-huggingface-cli download briaai/RMBG-1.4 --local-dir models/RMBG-1.4
+huggingface-cli login
+huggingface-cli download briaai/RMBG-2.0 --local-dir models/RMBG-2.0
 ```
 
-确认存在 `models/RMBG-1.4/onnx/model.onnx`（约 170MB），然后：
+确认存在 `models/RMBG-2.0/onnx/model_q4.onnx`（约 350MB），然后：
 
 ```bash
 MODEL_LOCAL_ONLY=true npm run dev
@@ -57,12 +64,12 @@ MODEL_LOCAL_ONLY=true npm run dev
 **推荐：上传本地模型**
 
 ```bash
-# 在本机打包（约 170MB）
-tar -czf rmbg-1.4.tar.gz -C models RMBG-1.4
+# 在本机打包（约 350MB）
+tar -czf rmbg-2.0.tar.gz -C models RMBG-2.0
 
 # 传到服务器并解压到项目目录
-scp rmbg-1.4.tar.gz user@your-server:/path/to/simple-rmbg/
-ssh user@your-server 'cd /path/to/simple-rmbg && tar -xzf rmbg-1.4.tar.gz -C models'
+scp rmbg-2.0.tar.gz user@your-server:/path/to/simple-rmbg/
+ssh user@your-server 'cd /path/to/simple-rmbg && tar -xzf rmbg-2.0.tar.gz -C models'
 ```
 
 在服务器进程环境变量中设置（systemd / Docker / 面板均可）：
@@ -70,7 +77,7 @@ ssh user@your-server 'cd /path/to/simple-rmbg && tar -xzf rmbg-1.4.tar.gz -C mod
 ```bash
 MODEL_LOCAL_ONLY=true
 # 若模型不在默认路径，再指定：
-# MODEL_LOCAL_PATH=/path/to/simple-rmbg/models/RMBG-1.4
+# MODEL_LOCAL_PATH=/path/to/simple-rmbg/models/RMBG-2.0
 ```
 
 **或：在服务器配置 HF_TOKEN**
@@ -79,6 +86,7 @@ MODEL_LOCAL_ONLY=true
 HF_TOKEN=hf_你的token
 ```
 
+同样需要该 HF 账号已在网页接受过 RMBG-2.0 条款。
 
 **验证是否就绪**
 
@@ -118,8 +126,8 @@ npm run dev
 
 如果网络环境不稳定，建议直接使用本地模型目录：
 
-- 默认本地目录：`models/RMBG-1.4`
-- 可通过 `MODEL_LOCAL_PATH` 或 `MODEL_1_4_LOCAL_PATH` 自定义
+- 默认本地目录：`models/RMBG-2.0`
+- 可通过 `MODEL_LOCAL_PATH` 或 `MODEL_2_0_LOCAL_PATH` 自定义
 - 开启 `MODEL_LOCAL_ONLY=true` 后，服务**只从本地加载**，不会请求外网
 
 启动示例：
@@ -131,10 +139,10 @@ MODEL_LOCAL_ONLY=true npm run dev
 或自定义目录：
 
 ```bash
-MODEL_LOCAL_PATH="/absolute/path/to/RMBG-1.4" MODEL_LOCAL_ONLY=true npm run dev
+MODEL_LOCAL_PATH="/absolute/path/to/RMBG-2.0" MODEL_LOCAL_ONLY=true npm run dev
 ```
 
-如果服务器无法访问 Hugging Face，先把 RMBG-1.4 权重下载到 `models/RMBG-1.4`，再启动：
+如果服务器无法访问 Hugging Face，先把 RMBG-2.0 权重下载到 `models/RMBG-2.0`，再启动：
 
 ```bash
 MODEL_LOCAL_ONLY=true npm run dev
@@ -217,7 +225,7 @@ curl -F "image=@photo.jpg" -F "bg=white" \
 
 ```bash
 curl "http://localhost:3000/api/remove-bg"
-# {"status":"ready","model":"briaai/RMBG-1.4"}
+# {"status":"ready","model":"briaai/RMBG-2.0"}
 ```
 
 ## 脚本
@@ -255,4 +263,4 @@ DEPLOY_PATH=/example/simple-rmbg scripts/first-deploy.sh
 
 ## 许可
 
-RMBG-1.4 模型由 BRIA AI 提供，使用前请在 Hugging Face 接受其许可条款；商业使用请参考其官方许可。
+RMBG-2.0 模型由 BRIA AI 提供，使用前请在 Hugging Face 接受其许可条款；商业使用请参考其官方许可。

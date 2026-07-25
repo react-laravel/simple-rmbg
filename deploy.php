@@ -149,7 +149,7 @@ legacy_cache="$deploy_path/.cache"
 
 mkdir -p "$shared_models" "$shared_cache"
 
-if [ ! -f "$shared_models/RMBG-1.4/onnx/model.onnx" ] && [ -d "$legacy_models/RMBG-1.4" ]; then
+if [ ! -f "$shared_models/RMBG-2.0/onnx/model_q4.onnx" ] && [ -d "$legacy_models/RMBG-2.0" ]; then
   echo "[deploy] 迁移 legacy models/ 到 shared/models/"
   rsync -a "$legacy_models/" "$shared_models/"
 fi
@@ -159,9 +159,9 @@ if [ -d "$legacy_cache" ] && [ ! -L "$legacy_cache" ]; then
   rsync -a "$legacy_cache/" "$shared_cache/"
 fi
 
-if [ ! -f "$shared_models/RMBG-1.4/onnx/model.onnx" ]; then
-  echo "[deploy] ERROR: 缺少模型 $shared_models/RMBG-1.4/onnx/model.onnx" >&2
-  echo "[deploy] 请上传 RMBG-1.4 到 shared/models/，或保留 legacy models/RMBG-1.4 让部署自动迁移。" >&2
+if [ ! -f "$shared_models/RMBG-2.0/onnx/model_q4.onnx" ]; then
+  echo "[deploy] ERROR: 缺少模型 $shared_models/RMBG-2.0/onnx/model_q4.onnx" >&2
+  echo "[deploy] 请上传 RMBG-2.0 到 shared/models/，或保留 legacy models/RMBG-2.0 让部署自动迁移。" >&2
   exit 75
 fi
 '

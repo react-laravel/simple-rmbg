@@ -19,7 +19,7 @@ module.exports = {
       autorestart: true,
       max_restarts: 5,
       min_uptime: '30s',
-      max_memory_restart: '3G',
+      max_memory_restart: '6G',
       watch: false,
       ignore_watch: ['node_modules', 'logs', '.next', 'models', '.cache'],
       restart_delay: 3000,

@@ -6,6 +6,22 @@ import type { RemoveBackgroundOptions, RemoveBackgroundResult } from './types'
 
 type LoadedModel = Awaited<ReturnType<typeof getModel>>
 
+let inferenceTail: Promise<void> = Promise.resolve()
+
+async function withInferenceLock<T>(run: () => Promise<T>): Promise<T> {
+  const previous = inferenceTail
+  let release!: () => void
+  inferenceTail = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  await previous
+  try {
+    return await run()
+  } finally {
+    release()
+  }
+}
+
 async function runSegmentation(
   buffer: Buffer,
   width: number,
@@ -56,7 +72,9 @@ export async function removeBackground(
     .toBuffer({ resolveWithObject: true })
 
   const { width, height } = info
-  const maskData = await runSegmentation(buffer, width, height, model, processor)
+  const maskData = await withInferenceLock(() =>
+    runSegmentation(buffer, width, height, model, processor)
+  )
   const composited = applyMaskToAlpha(rgba, maskData)
 
   const base = sharp(composited, { raw: { width, height, channels: 4 } })
