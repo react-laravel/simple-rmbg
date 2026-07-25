@@ -26,14 +26,6 @@ function errorResponse(message: string, status = 400) {
 function formatServerError(err: unknown): string {
   const base = err instanceof Error ? err.message : String(err)
   const lower = base.toLowerCase()
-  if (
-    lower.includes('unauthorized') ||
-    lower.includes('401') ||
-    (base.includes('RMBG-2.0') &&
-      (lower.includes('fetch failed') || lower.includes('connect timeout')))
-  ) {
-    return `${base}。RMBG-2.0 为受条款保护模型：1) 在 https://huggingface.co/briaai/RMBG-2.0 登录并同意条款；2) 创建 Access Token，启动时设置 HF_TOKEN=hf_...；或 3) 在本机下载 models/RMBG-2.0（含 onnx/model.onnx）上传到服务器，设置 MODEL_LOCAL_ONLY=true。部署时 models/ 不会随 git 提交。`
-  }
   if (lower.includes('fetch failed') || lower.includes('connect timeout')) {
     return `${base}。模型首次下载失败，请检查网络/代理，或先手动下载模型到本地模型目录后重试。`
   }

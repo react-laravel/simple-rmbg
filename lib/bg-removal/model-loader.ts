@@ -9,7 +9,7 @@ import {
 import { ProxyAgent, setGlobalDispatcher } from 'undici'
 import { getErrorMessage, isRetryableNetworkError, sleep } from './utils'
 
-// 模型与处理器在本进程内缓存为单例，避免每次请求重复加载（约几十 MB）。
+// 模型与处理器在本进程内缓存为单例，避免每次请求重复加载。
 env.cacheDir = path.join(process.cwd(), '.cache')
 
 function normalizeRemoteHost(value: string): string {
@@ -46,7 +46,7 @@ type ModelSpec = {
   id: string
   localPath: string
   displayName: string
-  modelType: 'birefnet'
+  modelType: 'birefnet' | 'isnet'
   processorConfig: {
     do_normalize: boolean
     do_pad: boolean
@@ -61,25 +61,25 @@ type ModelSpec = {
 }
 
 export const MODEL_LOCAL_PATH = path.resolve(
-  process.env.MODEL_2_0_LOCAL_PATH ??
+  process.env.MODEL_1_4_LOCAL_PATH ??
     process.env.MODEL_LOCAL_PATH ??
-    path.join(process.cwd(), 'models', 'RMBG-2.0')
+    path.join(process.cwd(), 'models', 'RMBG-1.4')
 )
 
 const ONNX_MODEL_PATH = path.join(MODEL_LOCAL_PATH, 'onnx', 'model.onnx')
 
 const MODEL_SPEC: ModelSpec = {
-  id: 'briaai/RMBG-2.0',
-  displayName: 'RMBG-2.0',
+  id: 'briaai/RMBG-1.4',
+  displayName: 'RMBG-1.4',
   localPath: MODEL_LOCAL_PATH,
-  modelType: 'birefnet',
+  modelType: 'isnet',
   processorConfig: {
     do_normalize: true,
     do_pad: false,
     do_rescale: true,
     do_resize: true,
-    image_mean: [0.485, 0.456, 0.406],
-    image_std: [0.229, 0.224, 0.225],
+    image_mean: [0.5, 0.5, 0.5],
+    image_std: [1, 1, 1],
     resample: 2,
     rescale_factor: 1 / 255,
     size: { width: 1024, height: 1024 },
@@ -172,7 +172,7 @@ export function getModelRuntimeInfo() {
     setupHint: fs.existsSync(ONNX_MODEL_PATH)
       ? '本地模型已就绪'
       : hasHfToken
-        ? '将使用 HF_TOKEN 从 Hugging Face 下载（需已在网页接受 briaai/RMBG-2.0 条款）'
-        : '请设置 HF_TOKEN，或将完整模型目录放到 localPath（含 onnx/model.onnx）并设置 MODEL_LOCAL_ONLY=true',
+        ? '将使用 HF_TOKEN 从 Hugging Face 下载模型'
+        : '将尝试从 Hugging Face 下载；也可将完整模型目录放到 localPath（含 onnx/model.onnx）并设置 MODEL_LOCAL_ONLY=true',
   }
 }
