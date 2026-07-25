@@ -1,6 +1,6 @@
 import { RawImage, type PreTrainedModel } from '@huggingface/transformers'
 import sharp from 'sharp'
-import { getModel } from './model-loader'
+import { getModel, unloadModel } from './model-loader'
 import { getPrimaryOutputTensor } from './model-output'
 import type { RemoveBackgroundOptions, RemoveBackgroundResult } from './types'
 
@@ -61,8 +61,6 @@ export async function removeBackground(
   options: RemoveBackgroundOptions = {}
 ): Promise<RemoveBackgroundResult> {
   const bg = options.bg ?? 'transparent'
-  const { model, processor } = await getModel()
-
   const buffer = Buffer.isBuffer(input) ? input : Buffer.from(input)
 
   const { data: rgba, info } = await sharp(buffer)
@@ -72,9 +70,14 @@ export async function removeBackground(
     .toBuffer({ resolveWithObject: true })
 
   const { width, height } = info
-  const maskData = await withInferenceLock(() =>
-    runSegmentation(buffer, width, height, model, processor)
-  )
+  const maskData = await withInferenceLock(async () => {
+    const { model, processor } = await getModel()
+    try {
+      return await runSegmentation(buffer, width, height, model, processor)
+    } finally {
+      await unloadModel()
+    }
+  })
   const composited = applyMaskToAlpha(rgba, maskData)
 
   const base = sharp(composited, { raw: { width, height, channels: 4 } })

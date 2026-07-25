@@ -158,6 +158,19 @@ export function getModel() {
   return modelPromise
 }
 
+/** 释放 ONNX session 及其内存池；大模型在本机每次推理后必须回收。 */
+export async function unloadModel() {
+  const current = modelPromise
+  modelPromise = null
+  if (!current) return
+  try {
+    const { model } = await current
+    await model.dispose()
+  } catch {
+    // 加载失败时 getModel() 已负责清空缓存；这里无需覆盖原始错误。
+  }
+}
+
 export function getModelRuntimeInfo() {
   const spec = MODEL_SPEC
   const hasHfToken = Boolean(process.env.HF_TOKEN?.trim())
