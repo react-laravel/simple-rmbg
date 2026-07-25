@@ -159,11 +159,13 @@ if [ -d "$legacy_cache" ] && [ ! -L "$legacy_cache" ]; then
   rsync -a "$legacy_cache/" "$shared_cache/"
 fi
 
-if [ ! -f "$shared_models/RMBG-2.0/onnx/model_q4.onnx" ]; then
-  echo "[deploy] ERROR: 缺少模型 $shared_models/RMBG-2.0/onnx/model_q4.onnx" >&2
-  echo "[deploy] 请上传 RMBG-2.0 到 shared/models/，或保留 legacy models/RMBG-2.0 让部署自动迁移。" >&2
-  exit 75
-fi
+for model_file in model_q4.onnx model.onnx; do
+  if [ ! -f "$shared_models/RMBG-2.0/onnx/$model_file" ]; then
+    echo "[deploy] ERROR: 缺少模型 $shared_models/RMBG-2.0/onnx/$model_file" >&2
+    echo "[deploy] 网页权重选择需要同时提供 Q4 与 FP32 权重。" >&2
+    exit 75
+  fi
+done
 '
 BASH);
 });

@@ -71,7 +71,7 @@ export async function removeBackground(
 
   const { width, height } = info
   const maskData = await withInferenceLock(async () => {
-    const { model, processor } = await getModel()
+    const { model, processor } = await getModel(options.weight)
     try {
       return await runSegmentation(buffer, width, height, model, processor)
     } finally {

@@ -167,9 +167,16 @@ MODEL_LOCAL_ONLY=true npm run dev
 
 ```bash
 curl -F "image=@photo.jpg" \
+  -F "weight=q4" \
   "http://localhost:3000/api/remove-bg" \
   -o result.png
 ```
+
+
+权重参数 `weight` 可选：
+
+- `q4`（默认，资源占用较低）
+- `fp32`（原始精度，处理更慢、内存占用更高）
 
 **2. application/json（远程图片 URL）**
 

@@ -5,12 +5,14 @@ import Dropzone from '@/components/Dropzone'
 import ResultView from '@/components/ResultView'
 
 type Bg = 'transparent' | 'white'
+type ModelWeight = 'q4' | 'fp32'
 
 export default function Home() {
   const [file, setFile] = useState<File | null>(null)
   const [originalUrl, setOriginalUrl] = useState<string | null>(null)
   const [resultUrl, setResultUrl] = useState<string | null>(null)
   const [bg, setBg] = useState<Bg>('transparent')
+  const [weight, setWeight] = useState<ModelWeight>('q4')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -21,7 +23,7 @@ export default function Home() {
     }
   }, [originalUrl, resultUrl])
 
-  const process = useCallback(async (target: File, background: Bg) => {
+  const process = useCallback(async (target: File, background: Bg, modelWeight: ModelWeight) => {
     setLoading(true)
     setError(null)
     setResultUrl((prev) => {
@@ -33,6 +35,7 @@ export default function Home() {
       const form = new FormData()
       form.append('image', target)
       form.append('bg', background)
+      form.append('weight', modelWeight)
 
       const res = await fetch('/api/remove-bg', { method: 'POST', body: form })
       if (!res.ok) {
@@ -56,17 +59,25 @@ export default function Home() {
         if (prev) URL.revokeObjectURL(prev)
         return URL.createObjectURL(f)
       })
-      void process(f, bg)
+      void process(f, bg, weight)
     },
-    [bg, process]
+    [bg, process, weight]
   )
 
   const handleBgChange = useCallback(
     (next: Bg) => {
       setBg(next)
-      if (file) void process(file, next)
+      if (file) void process(file, next, weight)
     },
-    [file, process]
+    [file, process, weight]
+  )
+
+  const handleWeightChange = useCallback(
+    (next: ModelWeight) => {
+      setWeight(next)
+      if (file) void process(file, bg, next)
+    },
+    [bg, file, process]
   )
 
   const reset = useCallback(() => {
@@ -87,6 +98,25 @@ export default function Home() {
       <header className="flex flex-col gap-2">
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">去背景</h1>
       </header>
+
+      <section className="rounded-xl border border-neutral-800 bg-neutral-900/50 p-4">
+        <label htmlFor="model-weight" className="mb-2 block text-sm font-medium text-neutral-200">
+          RMBG-2.0 权重
+        </label>
+        <select
+          id="model-weight"
+          value={weight}
+          onChange={(event) => handleWeightChange(event.target.value as ModelWeight)}
+          disabled={loading}
+          className="w-full rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm text-neutral-100 outline-none focus:border-emerald-500 disabled:opacity-50"
+        >
+          <option value="q4">Q4（推荐，约 333 MiB）</option>
+          <option value="fp32">FP32 原始权重（约 977 MiB，速度更慢）</option>
+        </select>
+        <p className="mt-2 text-xs leading-5 text-neutral-500">
+          两项都是最新版 RMBG-2.0；Q4 更节省资源，FP32 保留原始权重精度。
+        </p>
+      </section>
 
       {!originalUrl ? (
         <Dropzone onFile={handleFile} disabled={loading} />
